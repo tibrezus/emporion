@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/tibrezus/emporion/service/user"
 )
 
 type APIServer struct {
