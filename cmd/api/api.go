@@ -1,23 +1,23 @@
 package api
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tibrezus/emporion/service/user"
 )
 
 type APIServer struct {
 	addr string
-	db   *sql.DB
+	db   *pgxpool.Pool
 }
 
-func NewAPIServer(addr string, db *sql.DB) *APIServer {
+func NewAPIServer(addr string, dbPool *pgxpool.Pool) (*APIServer, error) {
 	return &APIServer{
 		addr: addr,
-		db:   db,
-	}
+		db:   dbPool,
+	}, nil
 }
 
 func (s *APIServer) Run() error {

@@ -1,23 +1,21 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
+	"context"
 
-	_ "github.com/lib/pq"
-	"github.com/tibrezus/emporion/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewPostgresStorage() (*sql.DB, error) {
-	envs := config.Envs
-
-	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		envs.Host, envs.Port, envs.User, envs.Password, envs.DBName)
-	db, err := sql.Open("postgres", connStr)
+func NewPostgresStorage(ctx context.Context, connString string) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, err
 	}
 
-	return db, nil
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return pool, nil
 }

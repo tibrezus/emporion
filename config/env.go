@@ -3,42 +3,41 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-// Variables for Postgres Connection
-type Config struct {
+type EnvConfig struct {
 	Host     string
-	Port     string
+	Port     uint16
 	User     string
 	Password string
 	DBName   string
-	SSLMode  string
 }
 
-var Envs = initConfig()
+var Envs EnvConfig
 
-func initConfig() Config {
-	err := godotenv.Load()
-	if err != nil {
+func initConfig() {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	return Config{
-		Host:     getEnv("DB_HOST", "http://localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "password"),
-		DBName:   getEnv("DB_NAME", "emporion"),
-		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
+	Envs.Host = os.Getenv("DB_HOST")
+	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		log.Fatalf("Error parsing DB_PORT: %v", err)
 	}
+	Envs.Port = uint16(port)
+	Envs.User = os.Getenv("DB_USER")
+	Envs.Password = os.Getenv("DB_PASSWORD")
+	Envs.DBName = os.Getenv("DB_NAME")
 }
 
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
+func GetEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
 	}
-
-	return fallback
+	return value
 }

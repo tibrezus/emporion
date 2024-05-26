@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 
 	"github.com/tibrezus/emporion/cmd/api"
@@ -9,15 +11,25 @@ import (
 )
 
 func main() {
+	config.initConfig()
 
-	config.SetEnv()
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Envs.User,
+		config.Envs.Password,
+		config.Envs.Host,
+		config.Envs.Port,
+		config.Envs.DBName)
 
-	db, err := db.NewPostgresStorage(cfg)
+	ctx := context.Background()
+	dbPool, err := db.NewPostgresStorage(ctx, connString)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	server := api.NewAPIServer(":8080", nil)
+	server, err := api.NewAPIServer(":8080", dbPool)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
